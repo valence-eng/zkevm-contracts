@@ -10,8 +10,6 @@
         "http://127.0.0.1:8446"
     ],
     "committeeMembersThreshold": 2,
-    "deployerPvtKey": "",
     "maxFeePerGas": "30",
     "maxPriorityFeePerGas": "1",
-    "multiplierGas": ""
 }

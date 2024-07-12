@@ -20,9 +20,7 @@ async function main() {
     let currentProvider = ethers.provider;
     if (deployParameters.multiplierGas || deployParameters.maxFeePerGas) {
         if (process.env.HARDHAT_NETWORK !== "hardhat") {
-            currentProvider = ethers.getDefaultProvider(
-                `https://eth-${process.env.HARDHAT_NETWORK}.g.alchemy.com/v2/${process.env.ALCHEMY_PROJECT_ID}`
-            ) as any;
+            currentProvider = ethers.getDefaultProvider(process.env.HARDHAT_NETWORK || "sepolia") as any;
             if (deployParameters.maxPriorityFeePerGas && deployParameters.maxFeePerGas) {
                 console.log(
                     `Hardcoded gas used: MaxPriority${deployParameters.maxPriorityFeePerGas} gwei, MaxFee${deployParameters.maxFeePerGas} gwei`
@@ -49,18 +47,7 @@ async function main() {
         }
     }
 
-    // Load deployer
-    let deployer;
-    if (deployParameters.deployerPvtKey) {
-        deployer = new ethers.Wallet(deployParameters.deployerPvtKey, currentProvider);
-    } else if (process.env.MNEMONIC) {
-        deployer = ethers.HDNodeWallet.fromMnemonic(
-            ethers.Mnemonic.fromPhrase(process.env.MNEMONIC),
-            "m/44'/60'/0'/0/0"
-        ).connect(currentProvider);
-    } else {
-        [deployer] = await ethers.getSigners();
-    }
+    const [deployer] = await ethers.getSigners();
 
     // Load initialZkEVMDeployerOwner
     const {initialZkEVMDeployerOwner} = deployParameters;

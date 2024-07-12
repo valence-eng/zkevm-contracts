@@ -49,9 +49,7 @@ async function main() {
     let currentProvider = ethers.provider;
     if (postDeploymentParameters.multiplierGas || postDeploymentParameters.maxFeePerGas) {
         if (process.env.HARDHAT_NETWORK !== "hardhat") {
-            currentProvider = ethers.getDefaultProvider(
-                `https://eth-${process.env.HARDHAT_NETWORK}.g.alchemy.com/v2/${process.env.ALCHEMY_PROJECT_ID}`
-            ) as any;
+            currentProvider = ethers.getDefaultProvider(process.env.HARDHAT_NETWORK || "sepolia") as any;
             if (postDeploymentParameters.maxPriorityFeePerGas && postDeploymentParameters.maxFeePerGas) {
                 console.log(
                     `Hardcoded gas used: MaxPriority${postDeploymentParameters.maxPriorityFeePerGas} gwei, MaxFee${postDeploymentParameters.maxFeePerGas} gwei`
@@ -80,17 +78,7 @@ async function main() {
     }
 
     // Load deployer
-    let deployer;
-    if (postDeploymentParameters.deployerPvtKey) {
-        deployer = new ethers.Wallet(postDeploymentParameters.deployerPvtKey, currentProvider);
-    } else if (process.env.MNEMONIC) {
-        deployer = ethers.HDNodeWallet.fromMnemonic(
-            ethers.Mnemonic.fromPhrase(process.env.MNEMONIC),
-            "m/44'/60'/0'/0/0"
-        ).connect(currentProvider);
-    } else {
-        [deployer] = await ethers.getSigners();
-    }
+    const [deployer] = await ethers.getSigners();
 
     console.log("Setting up committee members parameters");
     const committeeLength = postDeploymentParameters.committeeMembersAddresses.length;
@@ -135,8 +123,8 @@ async function main() {
     }
 
     // Load zkEVM deployer
-    const PolgonZKEVMDeployerFactory = await ethers.getContractFactory("PolygonZkEVMDeployer", deployer);
-    const zkEVMDeployerContract = PolgonZKEVMDeployerFactory.attach(
+    const PolygonZKEVMDeployerFactory = await ethers.getContractFactory("PolygonZkEVMDeployer", deployer);
+    const zkEVMDeployerContract = PolygonZKEVMDeployerFactory.attach(
         outputJson.zkEVMDeployerContract
     ) as PolygonZkEVMDeployer;
 
@@ -160,7 +148,7 @@ async function main() {
 
     if ((await polygonRollupManagerContract.getBatchFee()) !== ethers.parseEther("0.0001")) {
         console.log("\n#######################");
-        console.log("Setting the batch fee to 0.0001 ether");
+        console.log("Setting the batch fee to 0.0001 weth");
         await (await polygonRollupManagerContract.setBatchFee(ethers.parseEther("0.0001"))).wait();
         expect(await polygonRollupManagerContract.getBatchFee()).to.be.equal(ethers.parseEther("0.0001"));
     } else {
