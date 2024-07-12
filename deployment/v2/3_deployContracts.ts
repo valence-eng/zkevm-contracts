@@ -59,7 +59,6 @@ async function main() {
     const networkIDMainnet = 0;
 
     // Gas token variables are 0 in mainnet, since native token it's ether
-    const gasTokenAddressMainnet = ethers.ZeroAddress;
     const gasTokenNetworkMainnet = 0n;
     const attemptsDeployProxy = 20;
     const gasTokenMetadata = "0x";
@@ -79,6 +78,8 @@ async function main() {
         "emergencyCouncilAddress",
         "zkEVMDeployerAddress",
         "polTokenAddress",
+        "gasTokenAddress",
+        "gasTokenNetwork",
     ];
 
     for (const parameterName of mandatoryDeploymentParameters) {
@@ -98,15 +99,15 @@ async function main() {
         salt,
         zkEVMDeployerAddress,
         polTokenAddress,
+        gasTokenAddress,
+        gasTokenNetwork,
     } = deployParameters;
 
     // Load provider
     let currentProvider = ethers.provider;
     if (deployParameters.multiplierGas || deployParameters.maxFeePerGas) {
         if (process.env.HARDHAT_NETWORK !== "hardhat") {
-            currentProvider = ethers.getDefaultProvider(
-                `https://${process.env.HARDHAT_NETWORK}.infura.io/v3/${process.env.INFURA_PROJECT_ID}`
-            ) as any;
+            currentProvider = ethers.getDefaultProvider(process.env.HARDHAT_NETWORK || "sepolia") as any;
             if (deployParameters.maxPriorityFeePerGas && deployParameters.maxFeePerGas) {
                 console.log(
                     `Hardcoded gas used: MaxPriority${deployParameters.maxPriorityFeePerGas} gwei, MaxFee${deployParameters.maxFeePerGas} gwei`
@@ -133,18 +134,7 @@ async function main() {
         }
     }
 
-    // Load deployer
-    let deployer;
-    if (deployParameters.deployerPvtKey) {
-        deployer = new ethers.Wallet(deployParameters.deployerPvtKey, currentProvider);
-    } else if (process.env.MNEMONIC) {
-        deployer = ethers.HDNodeWallet.fromMnemonic(
-            ethers.Mnemonic.fromPhrase(process.env.MNEMONIC),
-            "m/44'/60'/0'/0/0"
-        ).connect(currentProvider);
-    } else {
-        [deployer] = await ethers.getSigners();
-    }
+    const [deployer] = await ethers.getSigners();
 
     // Load zkEVM deployer
     const PolgonZKEVMDeployerFactory = await ethers.getContractFactory("PolygonZkEVMDeployer", deployer);
@@ -295,8 +285,8 @@ async function main() {
 
     const dataCallProxy = polygonZkEVMBridgeFactory.interface.encodeFunctionData("initialize", [
         networkIDMainnet,
-        gasTokenAddressMainnet,
-        gasTokenNetworkMainnet,
+        gasTokenAddress,
+        gasTokenNetwork,
         precalculateGlobalExitRootAddress,
         precalculateRollupManager,
         gasTokenMetadata,

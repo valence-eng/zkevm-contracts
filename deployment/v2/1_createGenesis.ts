@@ -18,7 +18,6 @@ const argv = yargs(process.argv.slice(2))
 
 const DEFAULT_MNEMONIC = "test test test test test test test test test test test junk";
 process.env.HARDHAT_NETWORK = "hardhat";
-process.env.MNEMONIC = argv.test ? DEFAULT_MNEMONIC : process.env.MNEMONIC;
 import {ethers, upgrades} from "hardhat";
 import {MemDB, ZkEVMDB, getPoseidon, smtUtils} from "@0xpolygonhermez/zkevm-commonjs";
 

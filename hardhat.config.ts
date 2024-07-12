@@ -80,7 +80,7 @@ const config: HardhatUserConfig = {
                 settings: {
                     optimizer: {
                         enabled: true,
-                        runs: 500,
+                        runs: 0,
                     },
                     evmVersion: "shanghai",
                 }, // try yul optimizer
@@ -90,7 +90,7 @@ const config: HardhatUserConfig = {
                 settings: {
                     optimizer: {
                         enabled: true,
-                        runs: 999,
+                        runs: 0,
                     },
                     evmVersion: "shanghai",
                 },
@@ -100,7 +100,7 @@ const config: HardhatUserConfig = {
                 settings: {
                     optimizer: {
                         enabled: true,
-                        runs: 500,
+                        runs: 0,
                     },
                     evmVersion: "shanghai",
                 }, // try yul optimizer
@@ -121,7 +121,7 @@ const config: HardhatUserConfig = {
                 settings: {
                     optimizer: {
                         enabled: true,
-                        runs: 500,
+                        runs: 0,
                     },
                     evmVersion: "shanghai",
                 }, // try yul optimizer
@@ -141,15 +141,8 @@ const config: HardhatUserConfig = {
     },
     networks: {
         mainnet: {
-            url: process.env.MAINNET_PROVIDER
-                ? process.env.MAINNET_PROVIDER
-                : `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
-            accounts: {
-                mnemonic: process.env.MNEMONIC || DEFAULT_MNEMONIC,
-                path: "m/44'/60'/0'/0",
-                initialIndex: 0,
-                count: 20,
-            },
+            url: `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_PROJECT_ID}`,
+            accounts: [process.env.MAINNET_PK || "0x0000000000000000000000000000000000000000000000000000000000000000"],
         },
         ropsten: {
             url: process.env.ROPSTEN_PROVIDER
@@ -185,15 +178,8 @@ const config: HardhatUserConfig = {
             },
         },
         sepolia: {
-            url: process.env.SEPOLIA_PROVIDER
-                ? process.env.SEPOLIA_PROVIDER
-                : `https://sepolia.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
-            accounts: {
-                mnemonic: process.env.MNEMONIC || DEFAULT_MNEMONIC,
-                path: "m/44'/60'/0'/0",
-                initialIndex: 0,
-                count: 20,
-            },
+            url: `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_PROJECT_ID}`,
+            accounts: [process.env.SEPOLIA_PK || "0x0000000000000000000000000000000000000000000000000000000000000000"],
         },
         localhost: {
             url: "http://127.0.0.1:8545",

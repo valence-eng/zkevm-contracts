@@ -89,9 +89,7 @@ async function main() {
     let currentProvider = ethers.provider;
     if (createRollupParameters.multiplierGas || createRollupParameters.maxFeePerGas) {
         if (process.env.HARDHAT_NETWORK !== "hardhat") {
-            currentProvider = ethers.getDefaultProvider(
-                `https://${process.env.HARDHAT_NETWORK}.infura.io/v3/${process.env.INFURA_PROJECT_ID}`
-            ) as any;
+            currentProvider = ethers.getDefaultProvider(process.env.HARDHAT_NETWORK || "sepolia") as any;
             if (createRollupParameters.maxPriorityFeePerGas && createRollupParameters.maxFeePerGas) {
                 console.log(
                     `Hardcoded gas used: MaxPriority${createRollupParameters.maxPriorityFeePerGas} gwei, MaxFee${createRollupParameters.maxFeePerGas} gwei`
@@ -119,18 +117,7 @@ async function main() {
         }
     }
 
-    // Load deployer
-    let deployer;
-    if (createRollupParameters.deployerPvtKey) {
-        deployer = new ethers.Wallet(createRollupParameters.deployerPvtKey, currentProvider);
-    } else if (process.env.MNEMONIC) {
-        deployer = ethers.HDNodeWallet.fromMnemonic(
-            ethers.Mnemonic.fromPhrase(process.env.MNEMONIC),
-            "m/44'/60'/0'/0/0"
-        ).connect(currentProvider);
-    } else {
-        [deployer] = await ethers.getSigners();
-    }
+    const [deployer] = await ethers.getSigners();
 
     // Load Rollup manager
     const PolgonRollupManagerFactory = await ethers.getContractFactory("PolygonRollupManager", deployer);
