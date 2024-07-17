@@ -25,3 +25,4 @@ post_deployment_parameters.json
 docker/deploymentOutput
 create_rollup_output.json
 genesis.json
+fullInfo.json
