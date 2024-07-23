@@ -421,11 +421,6 @@ async function main() {
         address: finalDeployer,
     });
 
-    if (deployParameters.test) {
-        // Add tester account with ether
-        genesis[genesis.length - 1].balance = "100000000000000000000000";
-    }
-
     // calculate root
     const poseidon = await getPoseidon();
     const {F} = poseidon;
