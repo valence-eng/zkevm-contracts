@@ -146,11 +146,11 @@ async function main() {
         deployer
     );
 
-    if ((await polygonRollupManagerContract.getBatchFee()) !== ethers.parseEther("0.0001")) {
+    if ((await polygonRollupManagerContract.getBatchFee()) !== ethers.parseUnits("1", "gwei")) {
         console.log("\n#######################");
-        console.log("Setting the batch fee to 0.0001 weth");
-        await (await polygonRollupManagerContract.setBatchFee(ethers.parseEther("0.0001"))).wait();
-        expect(await polygonRollupManagerContract.getBatchFee()).to.be.equal(ethers.parseEther("0.0001"));
+        console.log("Setting the batch fee to 1 GWEI");
+        await (await polygonRollupManagerContract.setBatchFee(ethers.parseUnits("1", "gwei"))).wait();
+        expect(await polygonRollupManagerContract.getBatchFee()).to.be.equal(ethers.parseUnits("1", "gwei"));
     } else {
         console.log("Batch fee already set");
     }
