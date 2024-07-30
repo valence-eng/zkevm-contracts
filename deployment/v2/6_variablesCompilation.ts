@@ -4,6 +4,7 @@ import * as dotenv from "dotenv";
 import "../helpers/utils";
 import path = require("path");
 import fs = require("fs");
+import {ethers} from "hardhat";
 dotenv.config({path: path.resolve(__dirname, "../../.env")});
 const pathOutputPath = path.join(__dirname, "./deploy_output.json");
 const pathRollupOutputPath = path.join(__dirname, "./create_rollup_output.json");
@@ -31,6 +32,7 @@ async function main() {
         throw new Error("Create rollup parameters file not found");
     }
     const createRollupParameters = require(createRollupParametersPath);
+    const currentProvider = ethers.getDefaultProvider(process.env.HARDHAT_NETWORK!);
 
     fs.writeFileSync(
         path.join(__dirname, "./fullInfo.json"),
@@ -46,7 +48,7 @@ async function main() {
                 deploymentBlockNumber: deployOutput.deploymentRollupManagerBlockNumber,
                 genesis: {
                     l1Config: {
-                        chainId: createRollupParameters.chainID,
+                        chainId: parseInt((await currentProvider.getNetwork()).chainId.toString(), 10),
                         polygonZkEVMAddress: rollupOutput.rollupAddress,
                         polygonRollupManagerAddress: deployOutput.polygonRollupManagerAddress,
                         polTokenAddress: deployOutput.polTokenAddress,
