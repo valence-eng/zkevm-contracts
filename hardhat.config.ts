@@ -201,6 +201,15 @@ const config: HardhatUserConfig = {
                 count: 20,
             },
         },
+        alicenetTestnet: {
+            url: "https://api.staging.alice.net",
+            gas: "auto",
+            gasMultiplier: 2,
+            gasPrice: "auto",
+            accounts: [
+                process.env.ALICENET_TESTNET_PK || "0x0000000000000000000000000000000000000000000000000000000000000000",
+            ],
+        },
         polygonZKEVMTestnet: {
             url: "https://rpc.cardona.zkevm-rpc.com",
             accounts: {
@@ -242,8 +251,17 @@ const config: HardhatUserConfig = {
             sepolia: `${process.env.ETHERSCAN_API_KEY}`,
             mainnet: `${process.env.ETHERSCAN_API_KEY}`,
             zkevmDevnet: `${process.env.ETHERSCAN_API_KEY}`,
+            alicenetTestnet: "0000000000000000000000000000000000",
         },
         customChains: [
+            {
+                network: "alicenetTestnet",
+                chainId: 10042,
+                urls: {
+                    apiURL: "https://block-explorer.staging.alice.net/api",
+                    browserURL: "https://block-explorer.staging.alice.net",
+                },
+            },
             {
                 network: "polygonZKEVMMainnet",
                 chainId: 1101,

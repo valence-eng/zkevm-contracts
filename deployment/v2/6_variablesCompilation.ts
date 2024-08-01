@@ -46,6 +46,7 @@ async function main() {
                 sequencerAddress: createRollupParameters.trustedSequencer,
                 aggregatorAddress: deployOutput.trustedAggregator,
                 deploymentBlockNumber: deployOutput.deploymentRollupManagerBlockNumber,
+                L2ChainID: createRollupParameters.chainID,
                 genesis: {
                     l1Config: {
                         chainId: parseInt((await currentProvider.getNetwork()).chainId.toString(), 10),
