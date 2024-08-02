@@ -31,6 +31,7 @@
   "license": "pending",
   "devDependencies": {
     "@0xpolygonhermez/zkevm-commonjs": "github:0xPolygonHermez/zkevm-commonjs#main",
+    "@cuonghx.gu-tech/hardhat-gcp-kms-signer-plugin": "^0.9.3",
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
     "@openzeppelin/contracts": "4.8.2",
     "@openzeppelin/contracts-upgradeable": "4.8.2",

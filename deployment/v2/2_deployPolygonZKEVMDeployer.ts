@@ -6,7 +6,7 @@ import fs = require("fs");
 
 import * as dotenv from "dotenv";
 dotenv.config({path: path.resolve(__dirname, "../../.env")});
-import {ethers, upgrades} from "hardhat";
+import {ethers, getKmsSigners, upgrades} from "hardhat";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
 
 import {deployPolygonZkEVMDeployer} from "../helpers/deployment-helpers";
@@ -47,7 +47,8 @@ async function main() {
         }
     }
 
-    const [deployer] = await ethers.getSigners();
+    const [deployer] = await getKmsSigners();
+    console.log("Deployer address: ", await deployer.getAddress());
 
     // Load initialZkEVMDeployerOwner
     const {initialZkEVMDeployerOwner} = deployParameters;
@@ -58,7 +59,7 @@ async function main() {
 
     // Deploy PolygonZkEVMDeployer if is not deployed already using keyless deployment
     const [zkEVMDeployerContract, keylessDeployer] = await deployPolygonZkEVMDeployer(
-        initialZkEVMDeployerOwner,
+        ethers.getAddress(initialZkEVMDeployerOwner),
         deployer as HardhatEthersSigner
     );
 

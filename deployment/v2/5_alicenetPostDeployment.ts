@@ -2,7 +2,7 @@
 /* eslint-disable no-console, no-inner-declarations, no-undef, import/no-unresolved */
 import {expect} from "chai";
 import * as dotenv from "dotenv";
-import {ethers} from "hardhat";
+import {ethers, getKmsSigners} from "hardhat";
 import {PolygonZkEVMDeployer} from "../../typechain-types";
 import "../helpers/utils";
 import path = require("path");
@@ -77,8 +77,8 @@ async function main() {
         }
     }
 
-    // Load deployer
-    const [deployer] = await ethers.getSigners();
+    const [deployer] = await getKmsSigners();
+    console.log("Deployer address: ", await deployer.getAddress());
 
     console.log("Setting up committee members parameters");
     const committeeLength = postDeploymentParameters.committeeMembersAddresses.length;
@@ -132,7 +132,9 @@ async function main() {
     if ((await deployer.provider?.getCode(zkEVMDeployerContract.target)) === "0x") {
         throw new Error("zkEVM deployer contract is not deployed");
     }
-    expect(deployer.address).to.be.equal(await zkEVMDeployerContract.owner());
+    expect((await deployer.getAddress()).toLocaleLowerCase()).to.be.equal(
+        (await zkEVMDeployerContract.owner()).toLocaleLowerCase()
+    );
 
     const polygonZkEVMBridgeContract = await ethers.getContractAt(
         "PolygonZkEVMBridgeV2",

@@ -6,7 +6,7 @@ import fs = require("fs");
 
 import * as dotenv from "dotenv";
 dotenv.config({path: path.resolve(__dirname, "../../.env")});
-import {ethers, upgrades} from "hardhat";
+import {ethers, getKmsSigners, upgrades} from "hardhat";
 
 const {create2Deployment} = require("../helpers/deployment-helpers");
 
@@ -134,7 +134,8 @@ async function main() {
         }
     }
 
-    const [deployer] = await ethers.getSigners();
+    const [deployer] = await getKmsSigners();
+    console.log("Deployer address: ", await deployer.getAddress());
 
     // Load zkEVM deployer
     const PolgonZKEVMDeployerFactory = await ethers.getContractFactory("PolygonZkEVMDeployer", deployer);
@@ -144,7 +145,9 @@ async function main() {
     if ((await deployer.provider?.getCode(zkEVMDeployerContract.target)) === "0x") {
         throw new Error("zkEVM deployer contract is not deployed");
     }
-    expect(deployer.address).to.be.equal(await zkEVMDeployerContract.owner());
+    expect((await deployer.getAddress()).toLocaleLowerCase()).to.be.equal(
+        (await zkEVMDeployerContract.owner()).toLocaleLowerCase()
+    );
 
     /*
      * Deploy Bridge
@@ -157,7 +160,9 @@ async function main() {
         deployer
     );
     const deployTransactionAdmin = (await proxyAdminFactory.getDeployTransaction()).data;
-    const dataCallAdmin = proxyAdminFactory.interface.encodeFunctionData("transferOwnership", [deployer.address]);
+    const dataCallAdmin = proxyAdminFactory.interface.encodeFunctionData("transferOwnership", [
+        await deployer.getAddress(),
+    ]);
     const [proxyAdminAddress, isProxyAdminDeployed] = await create2Deployment(
         zkEVMDeployerContract,
         salt,
@@ -176,9 +181,9 @@ async function main() {
 
     const proxyAdminInstance = proxyAdminFactory.attach(proxyAdminAddress) as ProxyAdmin;
     const proxyAdminOwner = await proxyAdminInstance.owner();
-    if (proxyAdminOwner !== deployer.address) {
+    if (proxyAdminOwner.toLocaleLowerCase() !== (await deployer.getAddress()).toLocaleLowerCase()) {
         throw new Error(
-            `Proxy admin was deployed, but the owner is not the deployer, deployer address: ${deployer.address}, proxyAdmin: ${proxyAdminOwner}`
+            `Proxy admin was deployed, but the owner is not the deployer, deployer address: ${await deployer.getAddress()}, proxyAdmin: ${proxyAdminOwner}`
         );
     }
 
@@ -228,16 +233,20 @@ async function main() {
 
         // Nonce globalExitRoot: currentNonce + 1 (deploy bridge proxy) + 1(impl globalExitRoot)
         // + 1 (deployTimelock) + 1 (transfer Ownership Admin) = +4
-        const nonceProxyGlobalExitRoot = Number(await ethers.provider.getTransactionCount(deployer.address)) + 4;
+        const nonceProxyGlobalExitRoot =
+            Number(await ethers.provider.getTransactionCount(await deployer.getAddress())) + 4;
         // nonceProxyRollupManager :Nonce globalExitRoot + 1 (proxy globalExitRoot) + 1 (impl rollupManager) = +2
         const nonceProxyRollupManager = nonceProxyGlobalExitRoot + 2;
 
         // Contracts are not deployed, normal deployment
         precalculateGlobalExitRootAddress = ethers.getCreateAddress({
-            from: deployer.address,
+            from: await deployer.getAddress(),
             nonce: nonceProxyGlobalExitRoot,
         });
-        precalculateRollupManager = ethers.getCreateAddress({from: deployer.address, nonce: nonceProxyRollupManager});
+        precalculateRollupManager = ethers.getCreateAddress({
+            from: await deployer.getAddress(),
+            nonce: nonceProxyRollupManager,
+        });
 
         // deploy timelock
         console.log("\n#######################");
@@ -380,13 +389,13 @@ async function main() {
         expect(precalculateRollupManager).to.be.equal(await polygonZkEVMGlobalExitRoot.rollupManager());
     }
 
-    const timelockAddressRollupManager = deployParameters.test ? deployer.address : timelockContract.target;
+    const timelockAddressRollupManager = deployParameters.test ? await deployer.getAddress() : timelockContract.target;
 
     // deploy Rollup Manager
     console.log("\n#######################");
     console.log("##### Deployment Rollup Manager #####");
     console.log("#######################");
-    console.log("deployer:", deployer.address);
+    console.log("deployer:", await deployer.getAddress());
     console.log("PolygonZkEVMGlobalExitRootAddress:", polygonZkEVMGlobalExitRoot?.target);
     console.log("polTokenAddress:", polTokenAddress);
     console.log("polygonZkEVMBridgeContract:", polygonZkEVMBridgeContract.target);
@@ -395,7 +404,7 @@ async function main() {
     console.log("pendingStateTimeout:", pendingStateTimeout);
     console.log("trustedAggregatorTimeout:", trustedAggregatorTimeout);
     console.log("admin:", admin);
-    console.log("timelockContract:", timelockAddressRollupManager);
+    console.log("RollupManager:", timelockAddressRollupManager);
     console.log("emergencyCouncilAddress:", emergencyCouncilAddress);
 
     const PolygonRollupManagerFactory = await ethers.getContractFactory("PolygonRollupManagerNotUpgraded", deployer);
@@ -524,7 +533,7 @@ async function main() {
         polygonZkEVMGlobalExitRootAddress: polygonZkEVMGlobalExitRoot?.target,
         polTokenAddress,
         zkEVMDeployerContract: zkEVMDeployerContract.target,
-        deployerAddress: deployer.address,
+        deployerAddress: await deployer.getAddress(),
         timelockContractAddress: timelockContract.target,
         deploymentRollupManagerBlockNumber: deploymentBlockNumber,
         upgradeToULxLyBlockNumber: deploymentBlockNumber,
