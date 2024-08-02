@@ -126,13 +126,15 @@ async function main() {
     await ethers.provider.send("hardhat_setBalance", [initialZkEVMDeployerOwner, "0xffffffffffffffff"]); // 18 ethers aprox
     const deployer = await ethers.getSigner(initialZkEVMDeployerOwner);
 
+    console.log("Deploying contracts to genesis block with deployer: ", await deployer.getAddress());
+
     // Deploy PolygonZkEVMDeployer if is not deployed already
     const [zkEVMDeployerContract, keylessDeployer] = await deployPolygonZkEVMDeployer(
-        initialZkEVMDeployerOwner,
+        ethers.getAddress(initialZkEVMDeployerOwner),
         deployer
     );
     if (isMainnet === false) {
-        finalDeployer = deployer.address;
+        finalDeployer = await deployer.getAddress();
         finalKeylessDeployer = keylessDeployer;
         finalzkEVMDeployerAdress = zkEVMDeployerContract.target;
     }
@@ -147,7 +149,9 @@ async function main() {
         deployer
     );
     const deployTransactionAdmin = (await proxyAdminFactory.getDeployTransaction()).data;
-    const dataCallAdmin = proxyAdminFactory.interface.encodeFunctionData("transferOwnership", [deployer.address]);
+    const dataCallAdmin = proxyAdminFactory.interface.encodeFunctionData("transferOwnership", [
+        await deployer.getAddress(),
+    ]);
     [proxyAdminAddress] = await create2Deployment(
         zkEVMDeployerContract,
         salt,
@@ -413,7 +417,7 @@ async function main() {
     });
 
     // deployer
-    const deployerInfo = await getAddressInfo(deployer.address);
+    const deployerInfo = await getAddressInfo(await deployer.getAddress());
     genesis.push({
         accountName: "deployer",
         balance: "0",
